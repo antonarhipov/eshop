@@ -223,6 +223,38 @@ This task list is derived from the implementation plan in docs/plan.md. Tasks ar
 
 ---
 
+## Phase 12 — Promo Code Functionality [P0]
+
+- [x] 144. Create PromoCode entity with DiscountType enum [P0] [R4]
+- [x] 145. Create PromoCodeRepository with custom queries [P0] [R4]
+- [x] 146. Update Cart entity to support promo codes (promoCodeId, promoCodeCode, discountAmount) [P0] [R4]
+- [x] 147. Create database migration V3 for promo_codes table [P0] [R18]
+- [x] 148. Create database migration V4 for cart table updates [P0] [R18]
+- [x] 149. Add seed data for testing promo codes [P0] [R18]
+- [x] 150. Create PromoCodeService with validation and discount calculation [P0] [R4]
+- [x] 151. Create PromoCodeValidationResult data class [P0] [R4]
+- [x] 152. Update CartService to integrate promo code functionality [P0] [R4]
+- [x] 153. Update CartService.recalculateCartTotals() to include discount calculation [P0] [R4]
+- [x] 154. Add promo code application and removal methods to CartService [P0] [R4]
+- [x] 155. Create ApplyPromoCodeRequest and PromoCodeDto classes [P0] [R4, R12]
+- [x] 156. Update CartDto to include promo code information [P0] [R4, R12]
+- [x] 157. Add POST /api/cart/{cartId}/promo-code endpoint [P0] [R4, R12]
+- [x] 158. Add DELETE /api/cart/{cartId}/promo-code endpoint [P0] [R4, R12]
+- [x] 159. Update CartOperationResponse to handle promo code errors [P0] [R4, R12]
+- [x] 160. Update cart.html template to include promo code input section [P0] [R4, R14]
+- [x] 161. Add promo code display in cart summary with discount amount [P0] [R4, R14]
+- [x] 162. Implement promo code validation error display [P0] [R4, R14]
+- [x] 163. Add remove promo code functionality to UI [P0] [R4, R14]
+- [x] 164. Update CartViewController to handle promo code operations [P0] [R4, R14]
+- [x] 165. Write unit tests for PromoCodeService validation logic [P0] [R4]
+- [x] 166. Write unit tests for discount calculations (percentage and fixed amount) [P0] [R4]
+- [x] 167. Write unit tests for cart total recalculation with promo codes [P0] [R4]
+- [x] 168. Write integration tests for promo code API endpoints [P0] [R4]
+- [x] 169. Write integration tests for promo code edge cases (expired, usage limits) [P0] [R4]
+- [x] 170. Write end-to-end tests for promo code UI functionality [P0] [R4]
+
+---
+
 ## Testing & Validation Tasks
 
 ### Unit Testing
@@ -265,12 +297,12 @@ This task list is derived from the implementation plan in docs/plan.md. Tasks ar
 
 ---
 
-**Total Tasks: 143**
-- **P0 (Critical):** 118 tasks
+**Total Tasks: 170**
+- **P0 (Critical):** 145 tasks
 - **P1 (Important):** 21 tasks  
 - **P2 (Nice-to-have):** 4 tasks
 
 **Progress Tracking:**
-- Completed: 80/143 (56%)
-- In Progress: 0/143 (0%)
-- Not Started: 63/143 (44%)
+- Completed: 107/170 (63%)
+- In Progress: 0/170 (0%)
+- Not Started: 63/170 (37%)

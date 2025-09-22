@@ -8,10 +8,12 @@ data class CartDto(
     val subtotal: BigDecimal,
     val vatAmount: BigDecimal,
     val shippingCost: BigDecimal,
+    val discountAmount: BigDecimal,
     val total: BigDecimal,
     val createdAt: LocalDateTime,
     val updatedAt: LocalDateTime,
-    val items: List<CartItemDto>
+    val items: List<CartItemDto>,
+    val promoCode: PromoCodeDto? = null
 )
 
 data class CartItemDto(
@@ -41,6 +43,16 @@ data class AddToCartRequest(
 data class UpdateCartItemRequest(
     val variantId: Long,
     val quantity: Int
+)
+
+data class PromoCodeDto(
+    val code: String,
+    val discountAmount: BigDecimal,
+    val description: String? = null
+)
+
+data class ApplyPromoCodeRequest(
+    val code: String
 )
 
 data class CartOperationResponse(

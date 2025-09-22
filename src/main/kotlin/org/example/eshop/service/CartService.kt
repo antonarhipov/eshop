@@ -17,7 +17,8 @@ class CartService(
     private val cartItemRepository: CartItemRepository,
     private val variantRepository: VariantRepository,
     private val vatCalculatorService: VatCalculatorService,
-    private val shippingCalculatorService: ShippingCalculatorService
+    private val shippingCalculatorService: ShippingCalculatorService,
+    private val promoCodeService: PromoCodeService
 ) {
 
     fun createCart(): Cart {
@@ -133,6 +134,51 @@ class CartService(
         return cartRepository.save(cart)
     }
 
+    fun applyPromoCode(cartId: Long, promoCodeString: String): Cart {
+        val cart = getCartWithItems(cartId)
+            ?: throw IllegalArgumentException("Cart not found with id: $cartId")
+
+        // Validate the promo code
+        val validationResult = promoCodeService.validatePromoCode(promoCodeString, cart.subtotal)
+        
+        if (!validationResult.isValid) {
+            throw IllegalArgumentException(validationResult.errorMessage ?: "Invalid promo code")
+        }
+
+        val promoCode = validationResult.promoCode!!
+        
+        // Remove existing promo code if any
+        if (cart.hasPromoCode()) {
+            cart.removePromoCode()
+        }
+
+        // Apply the new promo code
+        cart.applyPromoCode(promoCode.id, promoCode.code, validationResult.discountAmount)
+        
+        // Increment usage count
+        promoCodeService.applyPromoCode(promoCode)
+
+        // Recalculate totals
+        recalculateCartTotals(cart)
+        return cartRepository.save(cart)
+    }
+
+    fun removePromoCode(cartId: Long): Cart {
+        val cart = getCartWithItems(cartId)
+            ?: throw IllegalArgumentException("Cart not found with id: $cartId")
+
+        if (!cart.hasPromoCode()) {
+            throw IllegalArgumentException("No promo code applied to this cart")
+        }
+
+        // Remove the promo code
+        cart.removePromoCode()
+
+        // Recalculate totals
+        recalculateCartTotals(cart)
+        return cartRepository.save(cart)
+    }
+
     private fun recalculateCartTotals(cart: Cart) {
         // Reload cart items to get current state
         val cartItems = cartItemRepository.findByCartId(cart.id)
@@ -150,7 +196,7 @@ class CartService(
         }
         cart.shippingCost = shippingCalculatorService.calculateShippingCost("domestic", totalWeightGrams) ?: BigDecimal.ZERO
         
-        // Calculate total
-        cart.total = cart.subtotal + cart.shippingCost
+        // Calculate total with discount applied
+        cart.total = cart.subtotal - cart.discountAmount + cart.shippingCost
     }
 }

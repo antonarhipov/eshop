@@ -61,3 +61,12 @@ INSERT INTO variants (product_id, sku, title, price, weight, shipping_weight, st
 UPDATE variants SET stock_qty = 2, reserved_qty = 0 WHERE sku = 'PU-357G-2018'; -- Low stock
 UPDATE variants SET stock_qty = 1, reserved_qty = 1 WHERE sku = 'JP-100G-2024'; -- Out of stock (all reserved)
 UPDATE variants SET stock_qty = 3, reserved_qty = 1 WHERE sku = 'WP-100G-2024'; -- Low stock with reservation
+
+-- Insert sample promo codes for testing
+INSERT INTO promo_codes (code, description, discount_type, discount_value, minimum_order_amount, max_usage_count, current_usage_count, valid_from, valid_until, is_active) VALUES
+('WELCOME10', '10% off for new customers', 'PERCENTAGE', 10.00, NULL, NULL, 0, '2024-01-01 00:00:00', '2024-12-31 23:59:59', true),
+('SAVE5', '£5 off any order', 'FIXED_AMOUNT', 5.00, NULL, NULL, 0, '2024-01-01 00:00:00', '2024-12-31 23:59:59', true),
+('BIGORDER', '£10 off orders over £50', 'FIXED_AMOUNT', 10.00, 50.00, NULL, 0, '2024-01-01 00:00:00', '2024-12-31 23:59:59', true),
+('LIMITED20', '20% off - limited use', 'PERCENTAGE', 20.00, NULL, 100, 5, '2024-01-01 00:00:00', '2024-12-31 23:59:59', true),
+('EXPIRED', 'Expired promo code', 'PERCENTAGE', 15.00, NULL, NULL, 0, '2023-01-01 00:00:00', '2023-12-31 23:59:59', true),
+('TEATIME', '15% off tea orders', 'PERCENTAGE', 15.00, 25.00, 500, 12, '2024-01-01 00:00:00', '2024-12-31 23:59:59', true);

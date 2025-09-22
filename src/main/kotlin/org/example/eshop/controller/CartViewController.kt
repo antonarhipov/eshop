@@ -2,6 +2,7 @@ package org.example.eshop.controller
 
 import org.example.eshop.dto.CartDto
 import org.example.eshop.dto.CartItemDto
+import org.example.eshop.dto.PromoCodeDto
 import org.example.eshop.dto.VariantSummaryDto
 import org.example.eshop.entity.Cart
 import org.example.eshop.entity.CartItem
@@ -86,15 +87,25 @@ class CartViewController(
     }
 
     private fun mapCartToDto(cart: Cart): CartDto {
+        val promoCodeDto = if (cart.hasPromoCode()) {
+            PromoCodeDto(
+                code = cart.promoCodeCode!!,
+                discountAmount = cart.discountAmount,
+                description = null // We don't store description in cart, only code
+            )
+        } else null
+
         return CartDto(
             id = cart.id,
             subtotal = cart.subtotal,
             vatAmount = cart.vatAmount,
             shippingCost = cart.shippingCost,
+            discountAmount = cart.discountAmount,
             total = cart.total,
             createdAt = cart.createdAt,
             updatedAt = cart.updatedAt,
-            items = cart.items.map { mapCartItemToDto(it) }
+            items = cart.items.map { mapCartItemToDto(it) },
+            promoCode = promoCodeDto
         )
     }
 

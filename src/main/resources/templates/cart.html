@@ -192,6 +192,84 @@
             font-size: 0.8em;
             margin-top: 5px;
         }
+        
+        .promo-code-section {
+            margin: 15px 0;
+            padding: 15px 0;
+            border-top: 1px solid #eee;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .promo-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .promo-input-group input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        .apply-promo-btn {
+            background: #2c5530;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+        
+        .apply-promo-btn:hover {
+            background: #1e3a21;
+        }
+        
+        .apply-promo-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .remove-promo-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-top: 8px;
+        }
+        
+        .remove-promo-btn:hover {
+            background: #c82333;
+        }
+        
+        .promo-error {
+            color: #721c24;
+            background: #f8d7da;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .promo-discount {
+            color: #155724;
+            font-weight: bold;
+        }
+        
+        .discount-amount {
+            color: #155724;
+        }
+        
+        .applied-promo-code {
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -270,6 +348,27 @@
                 <div class="summary-row">
                     <span>Shipping:</span>
                     <span>£<span th:text="${#numbers.formatDecimal(cart.shippingCost, 1, 2)}">0.00</span></span>
+                </div>
+                
+                <!-- Promo Code Section -->
+                <div class="promo-code-section">
+                    <!-- Promo Code Input (show if no promo code applied) -->
+                    <div th:if="${cart.promoCode == null}" class="promo-code-input">
+                        <div class="promo-input-group">
+                            <input type="text" id="promoCodeInput" placeholder="Enter promo code" maxlength="50">
+                            <button type="button" onclick="applyPromoCode()" class="apply-promo-btn">Apply</button>
+                        </div>
+                        <div id="promoCodeError" class="promo-error" style="display: none;"></div>
+                    </div>
+                    
+                    <!-- Applied Promo Code Display -->
+                    <div th:if="${cart.promoCode != null}" class="applied-promo-code">
+                        <div class="summary-row promo-discount">
+                            <span>Promo Code (<span th:text="${cart.promoCode.code}">CODE</span>):</span>
+                            <span class="discount-amount">-£<span th:text="${#numbers.formatDecimal(cart.discountAmount, 1, 2)}">0.00</span></span>
+                        </div>
+                        <button type="button" onclick="removePromoCode()" class="remove-promo-btn">Remove Promo Code</button>
+                    </div>
                 </div>
                 
                 <div class="summary-row total">
@@ -365,6 +464,110 @@
             
             window.location.href = `/checkout/${cartId}`;
         }
+        
+        function applyPromoCode() {
+            if (!cartId) {
+                alert('Cart not found. Please refresh the page.');
+                return;
+            }
+            
+            const promoCodeInput = document.getElementById('promoCodeInput');
+            const promoCode = promoCodeInput.value.trim().toUpperCase();
+            const errorDiv = document.getElementById('promoCodeError');
+            const applyBtn = document.querySelector('.apply-promo-btn');
+            
+            // Clear previous errors
+            errorDiv.style.display = 'none';
+            errorDiv.textContent = '';
+            
+            if (!promoCode) {
+                showPromoError('Please enter a promo code');
+                return;
+            }
+            
+            // Disable button during request
+            applyBtn.disabled = true;
+            applyBtn.textContent = 'Applying...';
+            
+            fetch(`/api/cart/${cartId}/promo-code`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    code: promoCode
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    showPromoError(data.message || 'Failed to apply promo code');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showPromoError('Failed to apply promo code');
+            })
+            .finally(() => {
+                applyBtn.disabled = false;
+                applyBtn.textContent = 'Apply';
+            });
+        }
+        
+        function removePromoCode() {
+            if (!cartId) {
+                alert('Cart not found. Please refresh the page.');
+                return;
+            }
+            
+            if (confirm('Are you sure you want to remove the promo code?')) {
+                const removeBtn = document.querySelector('.remove-promo-btn');
+                
+                // Disable button during request
+                removeBtn.disabled = true;
+                removeBtn.textContent = 'Removing...';
+                
+                fetch(`/api/cart/${cartId}/promo-code`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert(data.message || 'Failed to remove promo code');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to remove promo code');
+                })
+                .finally(() => {
+                    removeBtn.disabled = false;
+                    removeBtn.textContent = 'Remove Promo Code';
+                });
+            }
+        }
+        
+        function showPromoError(message) {
+            const errorDiv = document.getElementById('promoCodeError');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+        
+        // Allow Enter key to apply promo code
+        document.addEventListener('DOMContentLoaded', function() {
+            const promoInput = document.getElementById('promoCodeInput');
+            if (promoInput) {
+                promoInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        applyPromoCode();
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>

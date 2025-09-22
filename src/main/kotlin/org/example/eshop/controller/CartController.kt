@@ -258,20 +258,95 @@ class CartController(
         }
     }
 
+    @PostMapping("/{cartId}/promo-code")
+    fun applyPromoCode(
+        @PathVariable cartId: Long,
+        @RequestBody request: ApplyPromoCodeRequest
+    ): ResponseEntity<CartOperationResponse> {
+        return try {
+            val cart = cartService.applyPromoCode(cartId, request.code)
+            
+            ResponseEntity.ok(
+                CartOperationResponse(
+                    success = true,
+                    message = "Promo code applied successfully",
+                    cart = mapCartToDto(cart)
+                )
+            )
+        } catch (e: IllegalArgumentException) {
+            ResponseEntity.badRequest().body(
+                CartOperationResponse(
+                    success = false,
+                    message = "Invalid promo code",
+                    errors = listOf(e.message ?: "Invalid promo code")
+                )
+            )
+        } catch (e: Exception) {
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                CartOperationResponse(
+                    success = false,
+                    message = "Failed to apply promo code",
+                    errors = listOf(e.message ?: "Unknown error")
+                )
+            )
+        }
+    }
+
+    @DeleteMapping("/{cartId}/promo-code")
+    fun removePromoCode(@PathVariable cartId: Long): ResponseEntity<CartOperationResponse> {
+        return try {
+            val cart = cartService.removePromoCode(cartId)
+            
+            ResponseEntity.ok(
+                CartOperationResponse(
+                    success = true,
+                    message = "Promo code removed successfully",
+                    cart = mapCartToDto(cart)
+                )
+            )
+        } catch (e: IllegalArgumentException) {
+            ResponseEntity.badRequest().body(
+                CartOperationResponse(
+                    success = false,
+                    message = "Invalid request",
+                    errors = listOf(e.message ?: "Invalid request")
+                )
+            )
+        } catch (e: Exception) {
+            ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                CartOperationResponse(
+                    success = false,
+                    message = "Failed to remove promo code",
+                    errors = listOf(e.message ?: "Unknown error")
+                )
+            )
+        }
+    }
+
     private fun getCartIdFromCookies(request: HttpServletRequest): Long? {
         return request.cookies?.find { it.name == "cartId" }?.value?.toLongOrNull()
     }
 
     private fun mapCartToDto(cart: Cart): CartDto {
+        val promoCodeDto = if (cart.hasPromoCode()) {
+            PromoCodeDto(
+                code = cart.promoCodeCode!!,
+                discountAmount = cart.discountAmount,
+                description = null // We don't store description in cart, only code
+            )
+        } else null
+
         return CartDto(
             id = cart.id,
             subtotal = cart.subtotal,
             vatAmount = cart.vatAmount,
             shippingCost = cart.shippingCost,
+            discountAmount = cart.discountAmount,
             total = cart.total,
             createdAt = cart.createdAt,
             updatedAt = cart.updatedAt,
-            items = cart.items.map { mapCartItemToDto(it) }
+            items = cart.items.map { mapCartItemToDto(it) },
+            promoCode = promoCodeDto
         )
     }
 
